@@ -84,8 +84,9 @@ def enforce_driver_supported():
                 raise exception.ImageNotAuthorized(image_id=image_id)
             except Exception:
                 pass
-        if not driver_name:
-            driver_name = driver.Driver.get_default_driver()
+            if not cluster_distro:
+                raise exception.OSDistroFieldNotFound(image_id=image_id)
+        driver_name = driver_name or driver.Driver.get_default_driver()
         # Write the resolved driver back so the controller body stores the
         # same driver that was validated here, without re-resolving.
         if driver_name is not None:

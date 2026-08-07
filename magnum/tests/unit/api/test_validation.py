@@ -447,6 +447,25 @@ class TestValidation(base.BaseTestCase):
         self.assertRaises(exception.ImageNotAuthorized,
                           test, self, cluster_template)
 
+    @mock.patch('pecan.request')
+    @mock.patch('magnum.common.clients.OpenStackClients')
+    def test_enforce_driver_supported_image_os_distro_unset(
+            self, mock_os_clients, mock_pecan_request):
+
+        @v.enforce_driver_supported()
+        def test(self, cluster_template):
+            pass
+
+        mock_os_clients.return_value.glance.return_value.find_image\
+            .return_value = mock.MagicMock(os_distro=None, properties={})
+        cluster_template = mock.MagicMock()
+        cluster_template.cluster_distro = None
+        cluster_template.driver = None
+        cluster_template.image_id = 'test-image-id'
+
+        self.assertRaises(exception.OSDistroFieldNotFound,
+                          test, self, cluster_template)
+
     @mock.patch('magnum.drivers.common.driver.Driver.get_driver')
     def test_enforce_driver_supported_user_driver_skips_image(
             self, mock_get_driver):
